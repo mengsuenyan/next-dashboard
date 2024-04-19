@@ -1,5 +1,5 @@
 import { customers, invoices, revenue, users } from "../app/lib/placeholder-data";
-import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+import { Pool, PoolClient, QueryResult } from "pg";
 import * as bcrypt from "bcrypt";
 
 const pool = new Pool({
@@ -15,6 +15,12 @@ pool.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err)
     process.exit(-1)
 });
+
+export async function getDBClient(): Promise<PoolClient> {
+    const client = pool.connect();
+
+    return client;
+}
 
 async function seedLog(f: string, query: Promise<QueryResult<any> | QueryResult<any>[]>) {
     try {
@@ -109,8 +115,8 @@ async function seedTest(client: PoolClient) {
 }
 
 
-async function main(params: Pool) {
-    const client = await params.connect();
+async function main() {
+    const client = await getDBClient();
     try {
         // await seedTest(client);
         await seedUsers(client);
@@ -121,12 +127,11 @@ async function main(params: Pool) {
         throw e;
     } finally {
         client.release();
-        await params.end();
     }
 }
 
 
-main(pool).catch((e) => {
+main().catch((e) => {
     console.error(
         'An error occurred while attempting to seed the database:',
         e,

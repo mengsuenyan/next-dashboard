@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDBClient = void 0;
 var placeholder_data_1 = require("../app/lib/placeholder-data");
 var pg_1 = require("pg");
 var bcrypt = require("bcrypt");
@@ -51,6 +52,16 @@ pool.on('error', function (err, client) {
     console.error('Unexpected error on idle client', err);
     process.exit(-1);
 });
+function getDBClient() {
+    return __awaiter(this, void 0, void 0, function () {
+        var client;
+        return __generator(this, function (_a) {
+            client = pool.connect();
+            return [2 /*return*/, client];
+        });
+    });
+}
+exports.getDBClient = getDBClient;
 function seedLog(f, query) {
     return __awaiter(this, void 0, void 0, function () {
         var res, e_1;
@@ -171,17 +182,17 @@ function seedTest(client) {
         });
     });
 }
-function main(params) {
+function main() {
     return __awaiter(this, void 0, void 0, function () {
         var client, e_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, params.connect()];
+                case 0: return [4 /*yield*/, getDBClient()];
                 case 1:
                     client = _a.sent();
                     _a.label = 2;
                 case 2:
-                    _a.trys.push([2, 7, 8, 10]);
+                    _a.trys.push([2, 7, 8, 9]);
                     // await seedTest(client);
                     return [4 /*yield*/, seedUsers(client)];
                 case 3:
@@ -196,21 +207,18 @@ function main(params) {
                     return [4 /*yield*/, seedRevenue(client)];
                 case 6:
                     _a.sent();
-                    return [3 /*break*/, 10];
+                    return [3 /*break*/, 9];
                 case 7:
                     e_2 = _a.sent();
                     throw e_2;
                 case 8:
                     client.release();
-                    return [4 /*yield*/, params.end()];
-                case 9:
-                    _a.sent();
                     return [7 /*endfinally*/];
-                case 10: return [2 /*return*/];
+                case 9: return [2 /*return*/];
             }
         });
     });
 }
-main(pool).catch(function (e) {
+main().catch(function (e) {
     console.error('An error occurred while attempting to seed the database:', e);
 });
