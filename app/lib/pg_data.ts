@@ -102,6 +102,7 @@ const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(query: string, currentPage: number) {
     const c = await getDBClient();
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    query = `%${query}%`;
     try {
         const invoices = await c.query<InvoicesTable>(`
       SELECT
@@ -115,11 +116,11 @@ export async function fetchFilteredInvoices(query: string, currentPage: number) 
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.name ILIKE %$1% OR
-        customers.email ILIKE %$2% OR
-        invoices.amount::text ILIKE %$3% OR
-        invoices.date::text ILIKE %$4% OR
-        invoices.status ILIKE %$5%
+        customers.name ILIKE $1 OR
+        customers.email ILIKE $2 OR
+        invoices.amount::text ILIKE $3 OR
+        invoices.date::text ILIKE $4 OR
+        invoices.status ILIKE $5
       ORDER BY invoices.date DESC
       LIMIT $6 OFFSET $7
     `, [query, query, query, query, query, ITEMS_PER_PAGE, offset]);
@@ -134,16 +135,17 @@ export async function fetchFilteredInvoices(query: string, currentPage: number) 
 }
 export async function fetchInvoicesPages(query: string) {
     const c = await getDBClient();
+    query = `%${query}%`;
     try {
         const count = await c.query(`SELECT COUNT(*)
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
-      customers.name ILIKE %$1% OR
-      customers.email ILIKE %$2% OR
-      invoices.amount::text ILIKE %$3% OR
-      invoices.date::text ILIKE %$4% OR
-      invoices.status ILIKE %$5%
+      customers.name ILIKE $1 OR
+      customers.email ILIKE $2 OR
+      invoices.amount::text ILIKE $3 OR
+      invoices.date::text ILIKE $4 OR
+      invoices.status ILIKE $5
   `, [query, query, query, query, query]);
 
         const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
@@ -205,6 +207,7 @@ export async function fetchCustomers() {
 
 export async function fetchFilteredCustomers(query: string) {
     const c = await getDBClient();
+    query = `%${query}%`;
     try {
         const data = await c.query<CustomersTableType>(`
 		SELECT
@@ -218,8 +221,8 @@ export async function fetchFilteredCustomers(query: string) {
 		FROM customers
 		LEFT JOIN invoices ON customers.id = invoices.customer_id
 		WHERE
-		  customers.name ILIKE %$1% OR
-        customers.email ILIKE %$2%
+		  customers.name ILIKE $1 OR
+        customers.email ILIKE $2
 		GROUP BY customers.id, customers.name, customers.email, customers.image_url
 		ORDER BY customers.name ASC
 	  `, [query, query]);
