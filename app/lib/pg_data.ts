@@ -25,10 +25,11 @@ export async function getDBClient() {
 export async function fetchRevenue() {
     const client = await getDBClient();
     try {
-        console.log('Fetching revenue data...');
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        // for test stream
+        // console.log('Fetching revenue data...');
+        // await new Promise((resolve) => setTimeout(resolve, 3000));
         const data: QueryResult<Revenue> = await client.query(`SELECT * FROM revenue`);
-        console.log('Data fetch completed after 3 seconds.');
+        // console.log('Data fetch completed after 3 seconds.');
         return data.rows;
     } catch (e) {
         console.error('DB err: ', e);
