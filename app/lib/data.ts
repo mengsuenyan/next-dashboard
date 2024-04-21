@@ -1,3 +1,4 @@
+import { Invoice } from './definitions';
 import * as local_pg from './pg_data';
 import * as vercel_pg from './vercel_data';
 
@@ -78,5 +79,29 @@ export async function getUser(email: string) {
         return local_pg.getUser(email);
     } else {
         return vercel_pg.getUser(email);
+    }
+}
+
+export async function insertInvoices(invoices: Omit<Invoice, 'id'>[]) {
+    if (is_local_pg()) {
+        return local_pg.insertInvoices(invoices);
+    } else {
+        return vercel_pg.insertInvoices(invoices);
+    }
+}
+
+export async function updateInvoice(invoice: Omit<Invoice, 'date'>) {
+    if (is_local_pg()) {
+        return local_pg.updateInvoice(invoice);
+    } else {
+        return vercel_pg.updateInvoice(invoice);
+    }
+}
+
+export async function deleteInvoice(id: string) {
+    if (is_local_pg()) {
+        return local_pg.deleteInvoice(id);
+    } else {
+        return vercel_pg.deleteInvoice(id);
     }
 }

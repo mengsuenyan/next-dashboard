@@ -1,5 +1,5 @@
 import { Pool, QueryResult } from "pg";
-import { CustomerField, CustomersTableType, InvoiceForm, InvoicesTable, LatestInvoice, Revenue, User } from "./definitions";
+import { CustomerField, CustomersTableType, Invoice, InvoiceForm, InvoicesTable, LatestInvoice, Revenue, User } from "./definitions";
 import { formatCurrency } from "./utils";
 
 const pool = new Pool({
@@ -250,6 +250,68 @@ export async function getUser(email: string) {
     } catch (error) {
         console.error('Failed to fetch user:', error);
         throw new Error('Failed to fetch user.');
+    } finally {
+        c.release();
+    }
+}
+
+export async function insertInvoices(invoices: Omit<Invoice, 'id'>[]) {
+    if (!invoices || invoices.length === 0) {
+        return;
+    }
+
+    const c = await getDBClient();
+
+    try {
+        let s = invoices.reduce<{s: string, v: any[]}>((pre, invoice, idx, arr) => {
+            idx = idx * 4;
+            let s;
+            if (arr.length - 1 == idx) {
+                s = `${pre.s} ($${idx+1},$${idx+2},$${idx+3},$${idx+4});`
+            } else {
+                s = `${pre.s} ($${idx+1},$${idx+2},$${idx+3},$${idx+4}),`
+            }
+            pre.v.push(invoice.customer_id, invoice.amount, invoice.status, invoice.date);
+            return {s, v: pre.v};
+        }, {s: `INSERT INTO invoices (customer_id, amount, status, date) VALUES `, v: []});
+        let res = await c.query(s.s, s.v);
+
+        console.log(`insertInvoices success: insert ${res.rowCount} items in into the table of invoices`);
+    } catch (error) {
+        console.error('Failed to insert data: ', error);
+        throw new Error('Failed to insert data to the table of invoice');
+    } finally {
+        c.release();
+    }
+}
+
+export async function updateInvoice(invoice: Omit<Invoice, 'date'>) {
+    const c = await getDBClient();
+
+    try {
+        let res = await c.query('UPDATE invoices SET customer_id = $1, amount = $2, status = $3 WHERE id = $4', 
+            [invoice.customer_id, invoice.amount, invoice.status, invoice.id]
+        );
+
+        console.log(`updateInvoice sucess: ${res.command}`);
+    } catch (e) {
+        console.error('Failed to update data: ', e);
+        throw new Error("Failed to update the data of the invoice table");
+    } finally {
+        c.release();
+    }
+}
+
+export async function deleteInvoice(id: string) {
+    const c = await getDBClient();
+
+    try {
+        let res = await c.query('DELETE FROM invoices WHERE id = $1', [id]);
+
+        console.log(`deleteInvoice sucess: ${res.command}`);
+    } catch (e) {
+        console.error('Failed to delete data: ', e);
+        throw new Error("Failed to delete the data of the invoice table");
     } finally {
         c.release();
     }

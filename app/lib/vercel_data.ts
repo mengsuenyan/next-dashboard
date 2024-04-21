@@ -7,6 +7,7 @@ import {
   LatestInvoiceRaw,
   User,
   Revenue,
+  Invoice,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -227,5 +228,43 @@ export async function getUser(email: string) {
   } catch (error) {
     console.error('Failed to fetch user:', error);
     throw new Error('Failed to fetch user.');
+  }
+}
+
+export async function insertInvoices(invoices: Omit<Invoice, 'id'>[]) {
+  try {
+    for (let val of invoices) {
+      const {customer_id: customerId, amount: amountInCents, status, date} = val;
+      await sql`
+      INSERT INTO invoices (customer_id, amount, status, date)
+      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+    `;
+    }
+  } catch (error) {
+    console.error('Failed to insert data: ', error);
+    throw new Error('Failed to insert data to the table of invoices');
+  }
+}
+
+export async function updateInvoice(invoice: Omit<Invoice, 'date'>) {
+  try {
+      const {id, customer_id: customerId, amount: amountInCents, status} = invoice;
+      await sql`
+      UPDATE invoices
+      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error('Failed to update data: ', error);
+    throw new Error('Failed to update data to the table of invoices');
+  }
+}
+
+export async function deleteInvoice(id: string) {
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+  } catch (error) {
+    console.error('Failed to delete data: ', error);
+    throw new Error('Failed to delete data to the table of invoices');
   }
 }
