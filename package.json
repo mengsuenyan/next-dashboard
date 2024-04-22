@@ -6,6 +6,7 @@
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "start": "next start",
+    "lint": "next lint",
     "local-seed": "tsc ./scripts/pg.ts && node -r dotenv/config ./scripts/pg.js"
   },
   "dependencies": {
