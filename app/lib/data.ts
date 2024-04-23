@@ -66,11 +66,19 @@ export async function fetchCustomers() {
     }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchCustomersPages(query: string) {
     if (is_local_pg()) {
-        return local_pg.fetchFilteredCustomers(query);
+        return local_pg.fetchCustomersPages(query);
     } else {
-        return vercel_pg.fetchFilteredCustomers(query);
+        return vercel_pg.fetchCustomersPages(query);
+    }
+}
+
+export async function fetchFilteredCustomers(query: string, currentPage: number) {
+    if (is_local_pg()) {
+        return local_pg.fetchFilteredCustomers(query, currentPage);
+    } else {
+        return vercel_pg.fetchFilteredCustomers(query, currentPage);
     }
 }
 

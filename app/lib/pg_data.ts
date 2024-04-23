@@ -205,9 +205,33 @@ export async function fetchCustomers() {
     }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchCustomersPages(query: string) {
     const c = await getDBClient();
     query = `%${query}%`;
+
+    try {
+        const count = await c.query(`
+        SELECT COUNT(*) FROM (SELECT COUNT(*) FROM customers 
+		LEFT JOIN invoices ON customers.id = invoices.customer_id
+		WHERE customers.name ILIKE $1 OR customers.email ILIKE $2
+		GROUP BY customers.id, customers.name, customers.email, customers.image_url)
+        `, [query, query]);
+
+        const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+        return totalPages;
+    } catch (e) {
+        console.error('DB err: ', e);
+        throw new Error('Failed to fetch the customers pages.');
+    } finally {
+        c.release();
+    }
+}
+
+export async function fetchFilteredCustomers(query: string, currentPage: number) {
+    const c = await getDBClient();
+    query = `%${query}%`;
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
     try {
         const data = await c.query<CustomersTableType>(`
 		SELECT
@@ -225,7 +249,8 @@ export async function fetchFilteredCustomers(query: string) {
         customers.email ILIKE $2
 		GROUP BY customers.id, customers.name, customers.email, customers.image_url
 		ORDER BY customers.name ASC
-	  `, [query, query]);
+        LIMIT $3 OFFSET $4
+	  `, [query, query, ITEMS_PER_PAGE, offset]);
 
         const customers = data.rows.map((customer) => ({
             ...customer,
