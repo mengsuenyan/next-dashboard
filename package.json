@@ -12,8 +12,6 @@
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@tailwindcss/forms": "^0.5.7",
-    "@types/node": "20.5.7",
-    "@types/pg": "^8.11.5",
     "@vercel/postgres": "^0.5.1",
     "autoprefixer": "10.4.15",
     "bcrypt": "^5.1.1",
@@ -31,7 +29,9 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.1",
     "@types/react": "18.2.21",
+    "@types/node": "20.5.7",
     "@types/react-dom": "18.2.14",
+    "@types/pg": "^8.11.5",
     "@vercel/style-guide": "^5.0.1",
     "dotenv": "^16.3.1",
     "eslint": "^8.52.0",

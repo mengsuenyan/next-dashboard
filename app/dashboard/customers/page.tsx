@@ -16,8 +16,6 @@ export default async function Page({ searchParams }: {
     const currentPage = Number(searchParams?.page) || 1;
     const totalPages = query.trim() ? await fetchCustomersPages(query) : 0;
 
-    console.log('ffffffffffffff-> ', totalPages);
-
     return (
         <div className="w-full">
             <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
